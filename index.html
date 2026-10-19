@@ -116,8 +116,6 @@
                     <i class="fa-solid fa-sun text-yellow-300" id="theme-icon"></i>
                     <span id="theme-text">Light Mode</span>
                 </button>
-
-                
             </div>
         </div>
     </header>
@@ -1418,7 +1416,7 @@ Q3: General suggestions. [Text]
             }
         }
 
-        // DOWNLOAD GUIDES & SOURCE CODE
+        // DOWNLOAD GUIDES
         function downloadCSVTemplate() {
             const content = "Question Text,Question Type\nRate lecture hall ventilation.,rating\nAre kitchen services clean?,yes_no\nGeneral feedback.,text";
             const blob = new Blob([content], { type: 'text/csv' });
@@ -1434,15 +1432,6 @@ Q3: General suggestions. [Text]
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = "Word_Import_Guide.txt";
-            link.click();
-        }
-
-        function downloadSourceCode() {
-            const htmlContent = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = "index.html";
             link.click();
         }
     </script>
