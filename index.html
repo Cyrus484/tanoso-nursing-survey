@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College of Nursing and Midwifery, Tanoso - Survey Portal</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                            dark: '#0f381e'
+                        },
+                        accent: {
+                            50: '#fff7ed',
+                            500: '#f97316',
+                            600: '#ea580c'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-header {
+            background: linear-gradient(135deg, #0f381e 0%, #166534 60%, #15803d 100%);
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Top Notification / Status Banner -->
+    <div id="toast" class="fixed top-4 right-4 z-50 transform transition-all duration-300 translate-y-[-100px] opacity-0 max-w-md w-full bg-slate-900 text-white p-4 rounded-xl shadow-2xl flex items-center space-x-3">
+        <i id="toast-icon" class="fas fa-check-circle text-green-400 text-xl"></i>
+        <div class="flex-1">
+            <h4 id="toast-title" class="font-bold text-sm">Notification</h4>
+            <p id="toast-msg" class="text-xs text-slate-300">Action performed successfully.</p>
+        </div>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- Header & Navigation Bar -->
+    <header class="gradient-header text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                
+                <!-- School Logo & Title -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-brand-800 shadow-md border-2 border-amber-400 font-bold text-xl">
+                        <i class="fas fa-user-nurse text-2xl text-brand-700"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg md:text-xl tracking-tight leading-tight text-white">COLLEGE OF NURSING AND MIDWIFERY, TANOSO</h1>
+                        <p class="text-xs text-emerald-200 font-medium">Quality Health Education & Excellence Survey Portal</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs / Role Selector -->
+                <nav class="flex items-center space-x-1 bg-brand-900/50 p-1.5 rounded-xl border border-emerald-600/30 text-xs sm:text-sm">
+                    <button id="nav-student" onclick="switchRole('student')" class="nav-btn active-nav flex items-center space-x-2 px-3 py-1.5 rounded-lg font-medium transition-all">
+                        <i class="fas fa-user-graduate"></i>
+                        <span>Student Survey</span>
+                    </button>
+                    <button id="nav-lecturer" onclick="switchRole('lecturer')" class="nav-btn flex items-center space-x-2 px-3 py-1.5 rounded-lg font-medium transition-all text-emerald-100 hover:text-white hover:bg-brand-800/60">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>Lecturer Portal</span>
+                    </button>
+                    <button id="nav-admin" onclick="switchRole('admin')" class="nav-btn flex items-center space-x-2 px-3 py-1.5 rounded-lg font-medium transition-all text-emerald-100 hover:text-white hover:bg-brand-800/60">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Admin Console</span>
+                    </button>
+                    <button id="nav-docs" onclick="switchRole('docs')" class="nav-btn flex items-center space-x-2 px-3 py-1.5 rounded-lg font-medium transition-all text-amber-200 hover:text-white hover:bg-amber-600/30">
+                        <i class="fas fa-book-open"></i>
+                        <span>Setup Guide</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dynamic Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ==================== 1. STUDENT VIEW ==================== -->
+        <section id="view-student" class="space-y-6">
+            <!-- Student Header Banner -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <div class="max-w-3xl">
+                    <span class="inline-block bg-brand-100 text-brand-800 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">Student Feedback System</span>
+                    <h2 class="text-2xl font-bold text-slate-800">Your Voice Matters!</h2>
+                    <p class="text-slate-600 text-sm mt-1">Please select an active survey below to rate your campus experiences, lecture halls, dining facilities, or evaluate your course lecturers. All responses are completely anonymous.</p>
+                </div>
+
+                <!-- Select Active Survey -->
+                <div class="mt-6 pt-6 border-t border-slate-100">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Select Active Survey to Fill</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="student-survey-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Questionnaire Form Container -->
+            <div id="student-survey-form-container" class="hidden bg-white rounded-2xl shadow-md border border-slate-200 p-6 sm:p-8">
+                <div class="border-b border-slate-200 pb-4 mb-6 flex justify-between items-start">
+                    <div>
+                        <span id="active-survey-category" class="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">General</span>
+                        <h3 id="active-survey-title" class="text-xl font-bold text-slate-800 mt-2">Survey Title</h3>
+                        <p id="active-survey-desc" class="text-slate-500 text-sm mt-1">Survey description here...</p>
+                    </div>
+                    <button onclick="cancelStudentSurvey()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-xl"></i></button>
+                </div>
+
+                <form id="student-survey-form" onsubmit="handleStudentSubmit(event)" class="space-y-8">
+                    <div id="survey-questions-list" class="space-y-8">
+                        <!-- Dynamic Questions Render Here -->
+                    </div>
+
+                    <!-- General Comments -->
+                    <div class="pt-4 border-t border-slate-100">
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Additional Suggestions or Comments (Optional)</label>
+                        <textarea id="student-general-comment" rows="3" class="w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none" placeholder="Provide any extra feedback regarding lecture hall infrastructure, kitchen hygiene, teaching methods, etc..."></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end space-x-4 pt-4 border-t border-slate-200">
+                        <button type="button" onclick="cancelStudentSurvey()" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-medium text-sm hover:bg-slate-50">Cancel</button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-800 text-white font-semibold text-sm shadow-md transition-all flex items-center space-x-2">
+                            <i class="fas fa-paper-plane"></i>
+                            <span>Submit Responses</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ==================== 2. LECTURER PORTAL VIEW ==================== -->
+        <section id="view-lecturer" class="hidden space-y-6">
+            <!-- Lecturer Auth Banner (If logged out) -->
+            <div id="lecturer-auth-box" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl border border-slate-200 mt-8">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-brand-50 text-brand-700 rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">Lecturer Portal Login</h2>
+                    <p class="text-xs text-slate-500 mt-1">College of Nursing & Midwifery, Tanoso</p>
+                </div>
+                <form onsubmit="handleLecturerLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Username / Staff ID</label>
+                        <input type="text" id="lecturer-user-input" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 outline-none text-sm" placeholder="e.g. dr.appiah">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+                        <input type="password" id="lecturer-pass-input" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 outline-none text-sm" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-brand-700 hover:bg-brand-800 text-white rounded-xl font-semibold text-sm shadow-lg transition-all">Sign In to Dashboard</button>
+                    <p class="text-center text-xs text-slate-400 mt-2">Default demo login: <span class="font-mono text-slate-600">dr.appiah</span> / <span class="font-mono text-slate-600">password123</span></p>
+                </form>
+            </div>
+
+            <!-- Lecturer Main Dashboard (If logged in) -->
+            <div id="lecturer-dashboard" class="hidden space-y-6">
+                <!-- Profile Bar -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-14 h-14 bg-emerald-100 text-brand-800 rounded-full flex items-center justify-center font-bold text-xl border-2 border-emerald-300">
+                            <span id="lecturer-avatar-initials">DA</span>
+                        </div>
+                        <div>
+                            <h2 id="lecturer-welcome-name" class="text-xl font-bold text-slate-800">Welcome, Dr. Appiah</h2>
+                            <p class="text-xs text-slate-500">Department of Nursing & Healthcare Management</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="openCreateLecturerSurveyModal()" class="px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white text-xs font-semibold rounded-xl shadow transition-all flex items-center space-x-2">
+                            <i class="fas fa-plus"></i>
+                            <span>Create Course Evaluation</span>
+                        </button>
+                        <button onclick="logoutLecturer()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all">Logout</button>
+                    </div>
+                </div>
+
+                <!-- Lecturer Evaluation Analytics -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center space-x-2">
+                        <i class="fas fa-chart-line text-brand-600"></i>
+                        <span>My Teaching Performance Evaluations</span>
+                    </h3>
+                    <div id="lecturer-surveys-analytics-list" class="space-y-8">
+                        <!-- Dynamic analytics cards for lecturer -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 3. ADMIN CONSOLE VIEW ==================== -->
+        <section id="view-admin" class="hidden space-y-6">
+            <!-- Admin Login Box -->
+            <div id="admin-auth-box" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl border border-slate-200 mt-8">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-slate-100 text-slate-800 rounded-full flex items-center justify-center mx-auto text-2xl mb-2">
+                        <i class="fas fa-user-shield text-brand-700"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">Admin Control Panel</h2>
+                    <p class="text-xs text-slate-500 mt-1">College Management & Survey Administration</p>
+                </div>
+                <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Admin Username</label>
+                        <input type="text" id="admin-user-input" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 outline-none text-sm" placeholder="admin">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Admin Password</label>
+                        <input type="password" id="admin-pass-input" required class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-brand-600 outline-none text-sm" placeholder="••••••••">
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-slate-900 hover:bg-black text-white rounded-xl font-semibold text-sm shadow-lg transition-all">Access Admin Console</button>
+                    <p class="text-center text-xs text-slate-400 mt-2">Demo credentials: <span class="font-mono text-slate-600">admin</span> / <span class="font-mono text-slate-600">admin123</span></p>
+                </form>
+            </div>
+
+            <!-- Admin Main Console (Logged in) -->
+            <div id="admin-dashboard" class="hidden space-y-6">
+                <!-- Admin Header & Nav Controls -->
+                <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <span class="bg-brand-600 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">Super Admin</span>
+                        <h2 class="text-2xl font-bold mt-1">College Survey Management Hub</h2>
+                        <p class="text-xs text-slate-400">Manage lecturers, publish campus surveys, import questionnaires & export report analytics.</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <button onclick="switchAdminTab('surveys')" class="admin-tab-btn active-admin-tab px-3 py-2 rounded-lg text-xs font-semibold bg-brand-700 text-white">Surveys & Import</button>
+                        <button onclick="switchAdminTab('lecturers')" class="admin-tab-btn px-3 py-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white">Lecturer Accounts</button>
+                        <button onclick="switchAdminTab('analytics')" class="admin-tab-btn px-3 py-2 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white">All Results & Reports</button>
+                        <button onclick="logoutAdmin()" class="px-3 py-2 bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold rounded-lg">Logout</button>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB 1: SURVEY MANAGEMENT & QUESTIONNAIRE IMPORT -->
+                <div id="admin-tab-surveys" class="space-y-6">
+                    <!-- Action Header Bar -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400">Total Active Surveys</p>
+                                <h4 id="stat-total-surveys" class="text-2xl font-bold text-slate-800">0</h4>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-brand-700 rounded-xl flex items-center justify-center text-xl">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400">Total Student Responses</p>
+                                <h4 id="stat-total-responses" class="text-2xl font-bold text-slate-800">0</h4>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-xs font-semibold text-slate-400">Registered Lecturers</p>
+                                <h4 id="stat-total-lecturers" class="text-2xl font-bold text-slate-800">0</h4>
+                            </div>
+                            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Questionnaire Import Hub & Guide Box -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-slate-100 pb-4 mb-4 gap-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
+                                    <i class="fas fa-file-import text-brand-700"></i>
+                                    <span>Import Questionnaire / Bulk Loader</span>
+                                </h3>
+                                <p class="text-xs text-slate-500 mt-0.5">Import questionnaires directly from structured text, CSV, or downloaded template files.</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="downloadQuestionnaireGuideWord()" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-semibold flex items-center space-x-1.5">
+                                    <i class="fas fa-file-word"></i>
+                                    <span>Download Word Guide</span>
+                                </button>
+                                <button onclick="downloadQuestionnaireCSVTemplate()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center space-x-1.5">
+                                    <i class="fas fa-file-excel"></i>
+                                    <span>Download CSV Template</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Import Input & Live Parser Form -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Survey Target Category</label>
+                                    <select id="import-category" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600">
+                                        <option value="General Campus">General Campus Infrastructure</option>
+                                        <option value="Lecture Halls">Lecture Hall & Academic Facilities</option>
+                                        <option value="Kitchen & Dining">Kitchen & Dining Hall</option>
+                                        <option value="Hostel & Facilities">Hostels & Living Quarters</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Survey Title</label>
+                                    <input type="text" id="import-survey-title" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" placeholder="e.g., Kitchen & Dining Quality Survey 2026">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1">Paste CSV / Questions Text or File Upload</label>
+                                    <textarea id="import-questions-text" rows="5" class="w-full font-mono text-xs p-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" placeholder="Format Example:
+Rate the cleanliness of the dining area?|scale
+How satisfied are you with meal nutrition?|scale
+Which meal service need improvement?|choice|Breakfast,Lunch,Dinner,All
+Additional recommendations for kitchen staff?|text"></textarea>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <label class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold cursor-pointer border border-slate-300">
+                                        <i class="fas fa-upload mr-1"></i> Upload File (.csv/.txt)
+                                        <input type="file" accept=".csv,.txt" onchange="handleFileUpload(event)" class="hidden">
+                                    </label>
+                                    <button onclick="processQuestionnaireImport()" class="px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow">
+                                        <i class="fas fa-magic mr-1"></i> Parse & Publish Survey
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Import Instructions Helper -->
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+                                <h4 class="font-bold text-slate-800 flex items-center space-x-1.5">
+                                    <i class="fas fa-info-circle text-brand-700"></i>
+                                    <span>Import Formatting Rules & Guide</span>
+                                </h4>
+                                <p class="text-slate-600">You can copy questions directly from Word or CSV. Separate fields using pipe <code class="bg-slate-200 px-1 py-0.5 rounded font-bold">|</code> or comma.</p>
+                                <ul class="list-disc list-inside text-slate-600 space-y-1 pl-1">
+                                    <li><strong>Rating Scale (1-5 Stars):</strong> <code class="bg-slate-200 px-1 rounded">Question Text|scale</code></li>
+                                    <li><strong>Multiple Choice:</strong> <code class="bg-slate-200 px-1 rounded">Question Text|choice|Option 1, Option 2, Option 3</code></li>
+                                    <li><strong>Open Text Feedback:</strong> <code class="bg-slate-200 px-1 rounded">Question Text|text</code></li>
+                                </ul>
+                                <div class="p-2.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-lg mt-2">
+                                    <i class="fas fa-lightbulb text-amber-600 mr-1"></i> Click <strong>"Download Word Guide"</strong> above to save an offline Microsoft Word template for faculty members.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Manage Active Surveys List -->
+                    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4">All Active & Published Surveys</h3>
+                        <div id="admin-surveys-list" class="space-y-4">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB 2: LECTURER USER MANAGEMENT -->
+                <div id="admin-tab-lecturers" class="hidden space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Lecturer Account Management</h3>
+                                <p class="text-xs text-slate-500">Create login credentials for lecturers so they can access their course evaluation surveys.</p>
+                            </div>
+                            <button onclick="openCreateLecturerModal()" class="px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow flex items-center space-x-1.5">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Add New Lecturer Account</span>
+                            </button>
+                        </div>
+
+                        <!-- Lecturers Table -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-200">
+                                        <th class="p-3">Lecturer Name</th>
+                                        <th class="p-3">Username</th>
+                                        <th class="p-3">Department / Courses</th>
+                                        <th class="p-3">Surveys Created</th>
+                                        <th class="p-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-lecturers-table-body" class="text-xs divide-y divide-slate-100">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB 3: GLOBAL ANALYTICS & EXPORTS -->
+                <div id="admin-tab-analytics" class="space-y-6 hidden">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-slate-100 pb-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Comprehensive Survey Analytics & Results</h3>
+                                <p class="text-xs text-slate-500">Full detailed analysis breakdown with horizontal headings, frequencies, pie charts, and export options.</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button onclick="exportAllData('csv')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow"><i class="fas fa-file-csv mr-1"></i> Export CSV</button>
+                                <button onclick="exportAllData('excel')" class="px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white text-xs font-semibold rounded-lg shadow"><i class="fas fa-file-excel mr-1"></i> Export Excel</button>
+                                <button onclick="exportAllData('word')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow"><i class="fas fa-file-word mr-1"></i> Export Word Report</button>
+                                <button onclick="exportAllData('pdf')" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow"><i class="fas fa-file-pdf mr-1"></i> Export Printable PDF</button>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Survey Results Breakdown -->
+                        <div id="admin-global-analytics-container" class="space-y-10">
+                            <!-- Dynamic Analytics Render Here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 4. DATABASE & SETUP GUIDE VIEW ==================== -->
+        <section id="view-docs" class="hidden space-y-6">
+            <div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <div>
+                    <span class="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-1 rounded-full">Deployment & Integration Guide</span>
+                    <h2 class="text-2xl font-bold text-slate-800 mt-2">How to Deploy with GitHub, Supabase & Vercel</h2>
+                    <p class="text-xs text-slate-500 mt-1">This application is pre-configured with built-in state storage, plus a full ready-to-run Supabase PostgreSQL backend schema.</p>
+                </div>
+
+                <!-- Steps Container -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <div class="w-8 h-8 bg-black text-white rounded-lg flex items-center justify-center font-bold mb-3">1</div>
+                        <h3 class="font-bold text-sm text-slate-800">1. GitHub Repository</h3>
+                        <p class="text-xs text-slate-600 mt-1">Push this <code class="bg-slate-200 px-1 rounded">index.html</code> code into a standard GitHub repository under your account.</p>
+                    </div>
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <div class="w-8 h-8 bg-emerald-600 text-white rounded-lg flex items-center justify-center font-bold mb-3">2</div>
+                        <h3 class="font-bold text-sm text-slate-800">2. Supabase Backend</h3>
+                        <p class="text-xs text-slate-600 mt-1">Create a free project on Supabase. Execute the SQL Script provided below in the Supabase SQL Editor.</p>
+                    </div>
+                    <div class="bg-slate-50 p-5 rounded-xl border border-slate-200">
+                        <div class="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center font-bold mb-3">3</div>
+                        <h3 class="font-bold text-sm text-slate-800">3. Vercel Hosting</h3>
+                        <p class="text-xs text-slate-600 mt-1">Import your GitHub repository into Vercel and hit deploy for instant HTTPS live web access.</p>
+                    </div>
+                </div>
+
+                <!-- SQL Schema Code Box -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-sm font-bold text-slate-800">Production Supabase SQL Database Schema Script</h3>
+                        <button onclick="copySQLSchema()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg border border-slate-300 font-medium">
+                            <i class="fas fa-copy mr-1"></i> Copy SQL Code
+                        </button>
+                    </div>
+                    <textarea id="sql-schema-code" readonly rows="12" class="w-full font-mono text-xs bg-slate-900 text-emerald-400 p-4 rounded-xl outline-none leading-relaxed">
+-- ========================================================
+-- COLLEGE OF NURSING AND MIDWIFERY, TANOSO - SURVEY DATABASE SCHEMA
+-- ========================================================
+
+-- 1. USERS TABLE (Admin & Lecturers)
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    role TEXT CHECK (role IN ('admin', 'lecturer')) NOT NULL,
+    department TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. SURVEYS TABLE
+CREATE TABLE IF NOT EXISTS surveys (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    category TEXT NOT NULL, -- General Campus, Kitchen, Lecturer Evaluation, etc.
+    description TEXT,
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    is_published BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. QUESTIONS TABLE
+CREATE TABLE IF NOT EXISTS questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    survey_id UUID REFERENCES surveys(id) ON DELETE CASCADE,
+    question_text TEXT NOT NULL,
+    type TEXT CHECK (type IN ('scale', 'choice', 'text')) NOT NULL,
+    options TEXT[], -- Array for multiple choice options if type = choice
+    order_index INT DEFAULT 0
+);
+
+-- 4. SURVEY RESPONSES TABLE
+CREATE TABLE IF NOT EXISTS responses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    survey_id UUID REFERENCES surveys(id) ON DELETE CASCADE,
+    student_comment TEXT,
+    submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. ANSWERS TABLE
+CREATE TABLE IF NOT EXISTS answers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    response_id UUID REFERENCES responses(id) ON DELETE CASCADE,
+    question_id UUID REFERENCES questions(id) ON DELETE CASCADE,
+    answer_value TEXT NOT NULL
+);
+
+-- SEED INITIAL DEMO ADMIN & LECTURER
+INSERT INTO users (username, password_hash, full_name, role, department)
+VALUES 
+  ('admin', 'admin123', 'System Administrator', 'admin', 'ICT Unit'),
+  ('dr.appiah', 'password123', 'Dr. Appiah Kubi', 'lecturer', 'Nursing Dept');
+</textarea>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
+            <p>© 2026 College of Nursing and Midwifery, Tanoso. All Rights Reserved.</p>
+            <p class="text-slate-500">Designed for Quality Assurance, Academic Performance & Campus Infrastructure Monitoring.</p>
+        </div>
+    </footer>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Create Lecturer Modal -->
+    <div id="modal-create-lecturer" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-lg">Create Lecturer Account</h3>
+                <button onclick="closeModal('modal-create-lecturer')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form onsubmit="handleCreateLecturerSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Full Name</label>
+                    <input type="text" id="new-lecturer-name" required class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" placeholder="e.g. Mrs. Grace Mensah">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Username / ID</label>
+                    <input type="text" id="new-lecturer-username" required class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" placeholder="e.g. gmensah">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Department / Assigned Subjects</label>
+                    <input type="text" id="new-lecturer-dept" required class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" placeholder="e.g. Midwifery & Anatomy">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Login Password</label>
+                    <input type="text" id="new-lecturer-pass" required class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" value="tanoso123">
+                </div>
+                <div class="flex justify-end space-x-3 pt-3">
+                    <button type="button" onclick="closeModal('modal-create-lecturer')" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Lecturer Survey Modal -->
+    <div id="modal-create-lecturer-survey" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
+                <h3 class="font-bold text-slate-800 text-lg">Create Teaching Evaluation Survey</h3>
+                <button onclick="closeModal('modal-create-lecturer-survey')" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+            </div>
+            <form onsubmit="handleCreateLecturerSurveySubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Course Title & Code</label>
+                    <input type="text" id="lsurvey-title" required class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" placeholder="e.g., NUR 201: Pediatric Nursing Evaluation">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Target Academic Class</label>
+                    <input type="text" id="lsurvey-class" required class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" placeholder="e.g., Diploma Nursing Year 2 - Class A">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Custom Assessment Questions (One per line)</label>
+                    <textarea id="lsurvey-questions" rows="4" class="w-full text-xs p-2.5 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-brand-600" placeholder="How effectively does the lecturer explain complex medical topics?
+Rate the punctuality and attendance of the lecturer.
+How helpful are practical demonstration sessions in the lab?"></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-3">
+                    <button type="button" onclick="closeModal('modal-create-lecturer-survey')" class="px-4 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow">Publish Evaluation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- JavaScript Core Application Engine -->
+    <script>
+        // ========================================================
+        // APPLICATION INITIAL STATE & MOCK DATA
+        // ========================================================
+
+        const STORAGE_KEY_SURVEYS = 'tanoso_surveys_v1';
+        const STORAGE_KEY_RESPONSES = 'tanoso_responses_v1';
+        const STORAGE_KEY_LECTURERS = 'tanoso_lecturers_v1';
+
+        // Pre-seeded initial dataset
+        const defaultLecturers = [
+            { id: 'lec_1', name: 'Dr. Appiah Kubi', username: 'dr.appiah', pass: 'password123', dept: 'Anatomy & Physiology' },
+            { id: 'lec_2', name: 'Mrs. Abigail Prempeh', username: 'aprempeh', pass: 'tanoso123', dept: 'Midwifery & Clinical Nursing' }
+        ];
+
+        const defaultSurveys = [
+            {
+                id: 'surv_1',
+                title: 'General Campus Infrastructure & Kitchen Quality 2026',
+                category: 'General Campus',
+                description: 'Evaluate campus lecture halls, lighting, kitchen hygiene, dining meals, and general student amenities.',
+                createdBy: 'admin',
+                isPublished: true,
+                questions: [
+                    { id: 'q1', text: 'How satisfied are you with lecture hall seating, ventilation, and lighting?', type: 'scale' },
+                    { id: 'q2', text: 'Rate the cleanliness and hygiene standards of the campus dining hall and kitchen.', type: 'scale' },
+                    { id: 'q3', text: 'Which meal time requires the most improvement in portion size and quality?', type: 'choice', options: ['Breakfast', 'Lunch', 'Dinner', 'All Meal Times'] },
+                    { id: 'q4', text: 'Rate the availability and cleanliness of washroom facilities on campus.', type: 'scale' }
+                ]
+            },
+            {
+                id: 'surv_2',
+                title: 'Dr. Appiah Kubi - Anatomy & Physiology Teaching Evaluation',
+                category: 'Lecturer Evaluation',
+                description: 'Student feedback survey for Dr. Appiah Kubi for first semester lecture performance.',
+                createdBy: 'lec_1',
+                isPublished: true,
+                questions: [
+                    { id: 'q201', text: 'How clearly does the lecturer explain complex anatomical structures during lectures?', type: 'scale' },
+                    { id: 'q202', text: 'Rate the lecturer’s punctuality and preparation for clinical lab demonstrations.', type: 'scale' },
+                    { id: 'q203', text: 'Is the lecturer accessible for questions after lecture hours?', type: 'choice', options: ['Always Accessible', 'Usually Accessible', 'Rarely Accessible', 'Not Accessible'] }
+                ]
+            }
+        ];
+
+        const defaultResponses = [
+            {
+                id: 'resp_101',
+                surveyId: 'surv_1',
+                submittedAt: new Date().toISOString(),
+                answers: {
+                    'q1': '4',
+                    'q2': '3',
+                    'q3': 'Dinner',
+                    'q4': '2'
+                },
+                comment: 'The lighting in Lecture Hall B needs urgent replacement bulb updates.'
+            },
+            {
+                id: 'resp_102',
+                surveyId: 'surv_1',
+                submittedAt: new Date().toISOString(),
+                answers: {
+                    'q1': '5',
+                    'q2': '4',
+                    'q3': 'Lunch',
+                    'q4': '3'
+                },
+                comment: 'Kitchen food quality is generally good, but water pressure in hostels is low.'
+            },
+            {
+                id: 'resp_103',
+                surveyId: 'surv_2',
+                submittedAt: new Date().toISOString(),
+                answers: {
+                    'q201': '5',
+                    'q202': '5',
+                    'q203': 'Always Accessible'
+                },
+                comment: 'Dr. Appiah is an excellent teacher. His practical diagrams are very helpful.'
+            }
+        ];
+
+        // Active Application State
+        let state = {
+            currentRole: 'student', // 'student', 'lecturer', 'admin', 'docs'
+            currentLecturer: null,  // Logged-in lecturer object
+            isAdminLoggedIn: false,
+            surveys: [],
+            responses: [],
+            lecturers: [],
+            activeSurveyToFill: null,
+            chartInstances: {}
+        };
+
+        // Initialize Application Data
+        function initApp() {
+            // Load state from local storage or pre-seeded defaults
+            const savedSurveys = localStorage.getItem(STORAGE_KEY_SURVEYS);
+            state.surveys = savedSurveys ? JSON.parse(savedSurveys) : defaultSurveys;
+
+            const savedResponses = localStorage.getItem(STORAGE_KEY_RESPONSES);
+            state.responses = savedResponses ? JSON.parse(savedResponses) : defaultResponses;
+
+            const savedLecturers = localStorage.getItem(STORAGE_KEY_LECTURERS);
+            state.lecturers = savedLecturers ? JSON.parse(savedLecturers) : defaultLecturers;
+
+            saveStateToStorage();
+            renderStudentView();
+        }
+
+        function saveStateToStorage() {
+            localStorage.setItem(STORAGE_KEY_SURVEYS, JSON.stringify(state.surveys));
+            localStorage.setItem(STORAGE_KEY_RESPONSES, JSON.stringify(state.responses));
+            localStorage.setItem(STORAGE_KEY_LECTURERS, JSON.stringify(state.lecturers));
+        }
+
+        // ========================================================
+        // ROLE SWITCHING & NAVIGATION
+        // ========================================================
+        function switchRole(role) {
+            state.currentRole = role;
+
+            // Highlight active navigation tab
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'text-brand-900', 'shadow');
+                btn.classList.add('text-emerald-100');
+            });
+
+            const activeBtn = document.getElementById(`nav-${role}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-emerald-100');
+                activeBtn.classList.add('bg-white', 'text-brand-900', 'shadow');
+            }
+
+            // Hide all views
+            ['student', 'lecturer', 'admin', 'docs'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+            });
+
+            // Show selected view
+            document.getElementById(`view-${role}`).classList.remove('hidden');
+
+            // Render specific view content
+            if (role === 'student') renderStudentView();
+            if (role === 'lecturer') renderLecturerView();
+            if (role === 'admin') renderAdminView();
+        }
+
+        function showToast(title, msg, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-msg').innerText = msg;
+
+            if (isSuccess) {
+                icon.className = 'fas fa-check-circle text-green-400 text-xl';
+            } else {
+                icon.className = 'fas fa-exclamation-circle text-red-400 text-xl';
+            }
+
+            toast.classList.remove('translate-y-[-100px]', 'opacity-0');
+            setTimeout(() => {
+                hideToast();
+            }, 3500);
+        }
+
+        function hideToast() {
+            document.getElementById('toast').classList.add('translate-y-[-100px]', 'opacity-0');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // ========================================================
+        // 1. STUDENT VIEW LOGIC
+        // ========================================================
+        function renderStudentView() {
+            const container = document.getElementById('student-survey-list');
+            const publishedSurveys = state.surveys.filter(s => s.isPublished);
+
+            if (publishedSurveys.length === 0) {
+                container.innerHTML = `<div class="col-span-2 text-center py-8 text-slate-400 text-sm">No active surveys are currently published for students. Please check back later.</div>`;
+                return;
+            }
+
+            container.innerHTML = publishedSurveys.map(s => {
+                const responseCount = state.responses.filter(r => r.surveyId === s.id).length;
+                return `
+                    <div class="border border-slate-200 rounded-2xl p-5 hover:border-brand-600 transition-all bg-slate-50/50 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="bg-brand-100 text-brand-800 text-[11px] font-bold px-2.5 py-0.5 rounded-full">${s.category}</span>
+                                <span class="text-[11px] text-slate-400"><i class="fas fa-check-circle text-emerald-500 mr-1"></i>Active</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-base mb-1">${s.title}</h4>
+                            <p class="text-xs text-slate-500 line-clamp-2 mb-4">${s.description || 'Fill out this official survey to rate campus facilities and lecturer performance.'}</p>
+                        </div>
+                        <button onclick="startStudentSurvey('${s.id}')" class="w-full py-2.5 bg-brand-700 hover:bg-brand-800 text-white rounded-xl text-xs font-semibold shadow transition-all flex items-center justify-center space-x-2">
+                            <span>Take Survey Now</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function startStudentSurvey(surveyId) {
+            const survey = state.surveys.find(s => s.id === surveyId);
+            if (!survey) return;
+
+            state.activeSurveyToFill = survey;
+            document.getElementById('active-survey-category').innerText = survey.category;
+            document.getElementById('active-survey-title').innerText = survey.title;
+            document.getElementById('active-survey-desc').innerText = survey.description || '';
+
+            const questionsContainer = document.getElementById('survey-questions-list');
+            questionsContainer.innerHTML = survey.questions.map((q, idx) => {
+                let inputHTML = '';
+
+                if (q.type === 'scale') {
+                    inputHTML = `
+                        <div class="flex items-center space-x-2 sm:space-x-4 mt-3">
+                            ${[1, 2, 3, 4, 5].map(val => `
+                                <label class="flex-1 text-center cursor-pointer">
+                                    <input type="radio" name="question_${q.id}" value="${val}" required class="peer hidden">
+                                    <div class="py-3 px-2 rounded-xl border border-slate-200 peer-checked:bg-brand-700 peer-checked:text-white peer-checked:border-brand-700 hover:bg-slate-50 transition-all">
+                                        <div class="font-bold text-base mb-0.5">${val}</div>
+                                        <div class="text-[10px] text-slate-400 peer-checked:text-emerald-100">
+                                            ${val === 1 ? 'Poor' : val === 3 ? 'Average' : val === 5 ? 'Excellent' : ''}
+                                        </div>
+                                    </div>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                } else if (q.type === 'choice') {
+                    inputHTML = `
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                            ${(q.options || []).map(opt => `
+                                <label class="flex items-center space-x-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all">
+                                    <input type="radio" name="question_${q.id}" value="${opt}" required class="text-brand-700 focus:ring-brand-600">
+                                    <span class="text-xs font-medium text-slate-700">${opt}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                } else if (q.type === 'text') {
+                    inputHTML = `
+                        <textarea name="question_${q.id}" rows="2" class="w-full text-xs p-3 rounded-xl border border-slate-300 mt-2 focus:ring-2 focus:ring-brand-600 outline-none" placeholder="Type your answer here..."></textarea>
+                    `;
+                }
+
+                return `
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                        <label class="block font-semibold text-slate-800 text-sm">
+                            <span class="text-brand-700 font-bold mr-1">Q${idx + 1}.</span> ${q.text}
+                        </label>
+                        ${inputHTML}
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('student-survey-form-container').classList.remove('hidden');
+            window.scrollTo({ top: document.getElementById('student-survey-form-container').offsetTop - 80, behavior: 'smooth' });
+        }
+
+        function cancelStudentSurvey() {
+            state.activeSurveyToFill = null;
+            document.getElementById('student-survey-form-container').classList.add('hidden');
+        }
+
+        function handleStudentSubmit(e) {
+            e.preventDefault();
+            if (!state.activeSurveyToFill) return;
+
+            const formData = new FormData(e.target);
+            const answers = {};
+
+            state.activeSurveyToFill.questions.forEach(q => {
+                answers[q.id] = formData.get(`question_${q.id}`) || 'N/A';
+            });
+
+            const newResponse = {
+                id: 'resp_' + Date.now(),
+                surveyId: state.activeSurveyToFill.id,
+                submittedAt: new Date().toISOString(),
+                answers: answers,
+                comment: document.getElementById('student-general-comment').value
+            };
+
+            state.responses.push(newResponse);
+            saveStateToStorage();
+
+            e.target.reset();
+            cancelStudentSurvey();
+            showToast('Response Submitted!', 'Thank you for completing the survey. Your response has been recorded anonymously.');
+            renderStudentView();
+        }
+
+        // ========================================================
+        // 2. LECTURER PORTAL LOGIC
+        // ========================================================
+        function handleLecturerLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('lecturer-user-input').value.trim();
+            const pass = document.getElementById('lecturer-pass-input').value.trim();
+
+            const found = state.lecturers.find(l => l.username.toLowerCase() === username.toLowerCase() && l.pass === pass);
+
+            if (found) {
+                state.currentLecturer = found;
+                showToast('Welcome Back', `Logged in as ${found.name}`);
+                renderLecturerView();
+            } else {
+                showToast('Login Failed', 'Invalid lecturer username or password.', false);
+            }
+        }
+
+        function logoutLecturer() {
+            state.currentLecturer = null;
+            renderLecturerView();
+        }
+
+        function renderLecturerView() {
+            const authBox = document.getElementById('lecturer-auth-box');
+            const dashboard = document.getElementById('lecturer-dashboard');
+
+            if (!state.currentLecturer) {
+                authBox.classList.remove('hidden');
+                dashboard.classList.add('hidden');
+                return;
+            }
+
+            authBox.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+
+            document.getElementById('lecturer-welcome-name').innerText = state.currentLecturer.name;
+            document.getElementById('lecturer-avatar-initials').innerText = state.currentLecturer.name.split(' ').map(n => n[0]).join('').substring(0, 2);
+
+            // Render analytics for this lecturer's surveys
+            const mySurveys = state.surveys.filter(s => s.createdBy === state.currentLecturer.id);
+            const container = document.getElementById('lecturer-surveys-analytics-list');
+
+            if (mySurveys.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 text-slate-400">
+                        <i class="fas fa-folder-open text-4xl mb-2"></i>
+                        <p class="text-sm">You haven't created any course evaluation surveys yet.</p>
+                        <button onclick="openCreateLecturerSurveyModal()" class="mt-3 px-4 py-2 bg-brand-700 text-white text-xs font-semibold rounded-xl">Create Evaluation Now</button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = mySurveys.map(survey => renderSurveyAnalyticsCard(survey)).join('');
+            initSurveyCharts(mySurveys);
+        }
+
+        function openCreateLecturerSurveyModal() {
+            document.getElementById('modal-create-lecturer-survey').classList.remove('hidden');
+        }
+
+        function handleCreateLecturerSurveySubmit(e) {
+            e.preventDefault();
+            if (!state.currentLecturer) return;
+
+            const title = document.getElementById('lsurvey-title').value.trim();
+            const classTarget = document.getElementById('lsurvey-class').value.trim();
+            const questionsRaw = document.getElementById('lsurvey-questions').value.trim().split('\n');
+
+            const questions = questionsRaw.filter(q => q.trim().length > 0).map((q, i) => ({
+                id: 'q_l_' + Date.now() + '_' + i,
+                text: q.trim(),
+                type: 'scale'
+            }));
+
+            if (questions.length === 0) {
+                showToast('Error', 'Please enter at least one survey question.', false);
+                return;
+            }
+
+            const newSurvey = {
+                id: 'surv_' + Date.now(),
+                title: `${title} (${classTarget})`,
+                category: 'Lecturer Evaluation',
+                description: `Evaluation survey created by ${state.currentLecturer.name}`,
+                createdBy: state.currentLecturer.id,
+                isPublished: true,
+                questions: questions
+            };
+
+            state.surveys.push(newSurvey);
+            saveStateToStorage();
+
+            closeModal('modal-create-lecturer-survey');
+            e.target.reset();
+            showToast('Survey Published', 'Your course evaluation is now active for students.');
+            renderLecturerView();
+        }
+
+        // ========================================================
+        // 3. ADMIN CONSOLE LOGIC
+        // ========================================================
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('admin-user-input').value.trim();
+            const p = document.getElementById('admin-pass-input').value.trim();
+
+            if (u === 'admin' && p === 'admin123') {
+                state.isAdminLoggedIn = true;
+                showToast('Admin Access Granted', 'Welcome to the Control Panel');
+                renderAdminView();
+            } else {
+                showToast('Access Denied', 'Invalid admin credentials.', false);
+            }
+        }
+
+        function logoutAdmin() {
+            state.isAdminLoggedIn = false;
+            renderAdminView();
+        }
+
+        function switchAdminTab(tabName) {
+            document.querySelectorAll('.admin-tab-btn').forEach(b => {
+                b.classList.remove('bg-brand-700', 'text-white');
+                b.classList.add('bg-slate-800', 'text-slate-300');
+            });
+            event.target.classList.remove('bg-slate-800', 'text-slate-300');
+            event.target.classList.add('bg-brand-700', 'text-white');
+
+            ['surveys', 'lecturers', 'analytics'].forEach(t => {
+                document.getElementById(`admin-tab-${t}`).classList.add('hidden');
+            });
+
+            document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
+
+            if (tabName === 'analytics') {
+                renderAdminAnalytics();
+            }
+        }
+
+        function renderAdminView() {
+            const authBox = document.getElementById('admin-auth-box');
+            const dashboard = document.getElementById('admin-dashboard');
+
+            if (!state.isAdminLoggedIn) {
+                authBox.classList.remove('hidden');
+                dashboard.classList.add('hidden');
+                return;
+            }
+
+            authBox.classList.add('hidden');
+            dashboard.classList.remove('hidden');
+
+            // Render Overview Stats
+            document.getElementById('stat-total-surveys').innerText = state.surveys.length;
+            document.getElementById('stat-total-responses').innerText = state.responses.length;
+            document.getElementById('stat-total-lecturers').innerText = state.lecturers.length;
+
+            // Render Active Surveys List
+            renderAdminSurveysList();
+
+            // Render Lecturers Table
+            renderAdminLecturersTable();
+        }
+
+        function renderAdminSurveysList() {
+            const container = document.getElementById('admin-surveys-list');
+            if (state.surveys.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400">No surveys found.</p>`;
+                return;
+            }
+
+            container.innerHTML = state.surveys.map(s => {
+                const respCount = state.responses.filter(r => r.surveyId === s.id).length;
+                return `
+                    <div class="p-4 border border-slate-200 rounded-xl bg-slate-50/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="bg-brand-100 text-brand-800 text-[10px] font-bold px-2 py-0.5 rounded">${s.category}</span>
+                                <span class="${s.isPublished ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} text-[10px] font-bold px-2 py-0.5 rounded">
+                                    ${s.isPublished ? 'Published' : 'Unpublished'}
+                                </span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm mt-1">${s.title}</h4>
+                            <p class="text-xs text-slate-500">${s.questions.length} Questions | ${respCount} Student Responses Collected</p>
+                        </div>
+                        <div class="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                            <button onclick="togglePublishSurvey('${s.id}')" class="px-3 py-1.5 ${s.isPublished ? 'bg-amber-100 text-amber-800 hover:bg-amber-200' : 'bg-emerald-600 text-white hover:bg-emerald-700'} text-xs font-semibold rounded-lg transition-all">
+                                ${s.isPublished ? 'Unpublish' : 'Publish Link'}
+                            </button>
+                            <button onclick="deleteSurvey('${s.id}')" class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 text-xs font-semibold rounded-lg">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function togglePublishSurvey(surveyId) {
+            const survey = state.surveys.find(s => s.id === surveyId);
+            if (survey) {
+                survey.isPublished = !survey.isPublished;
+                saveStateToStorage();
+                showToast('Status Updated', `Survey is now ${survey.isPublished ? 'Published' : 'Unpublished'}`);
+                renderAdminSurveysList();
+                renderStudentView();
+            }
+        }
+
+        function deleteSurvey(surveyId) {
+            if (confirm('Are you sure you want to delete this survey and its collected responses?')) {
+                state.surveys = state.surveys.filter(s => s.id !== surveyId);
+                state.responses = state.responses.filter(r => r.surveyId !== surveyId);
+                saveStateToStorage();
+                showToast('Deleted', 'Survey removed successfully');
+                renderAdminView();
+            }
+        }
+
+        function renderAdminLecturersTable() {
+            const tbody = document.getElementById('admin-lecturers-table-body');
+            tbody.innerHTML = state.lecturers.map(l => {
+                const count = state.surveys.filter(s => s.createdBy === l.id).length;
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-semibold text-slate-800">${l.name}</td>
+                        <td class="p-3 text-slate-600 font-mono">${l.username}</td>
+                        <td class="p-3 text-slate-600">${l.dept}</td>
+                        <td class="p-3 text-slate-600 font-bold">${count} Surveys</td>
+                        <td class="p-3 text-right">
+                            <button onclick="deleteLecturer('${l.id}')" class="text-red-600 hover:text-red-800 font-semibold"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function openCreateLecturerModal() {
+            document.getElementById('modal-create-lecturer').classList.remove('hidden');
+        }
+
+        function handleCreateLecturerSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('new-lecturer-name').value.trim();
+            const username = document.getElementById('new-lecturer-username').value.trim();
+            const dept = document.getElementById('new-lecturer-dept').value.trim();
+            const pass = document.getElementById('new-lecturer-pass').value.trim();
+
+            const newLecturer = {
+                id: 'lec_' + Date.now(),
+                name, username, dept, pass
+            };
+
+            state.lecturers.push(newLecturer);
+            saveStateToStorage();
+
+            closeModal('modal-create-lecturer');
+            e.target.reset();
+            showToast('Lecturer Account Created', `Login for ${name} created successfully.`);
+            renderAdminView();
+        }
+
+        function deleteLecturer(id) {
+            if (confirm('Remove this lecturer account?')) {
+                state.lecturers = state.lecturers.filter(l => l.id !== id);
+                saveStateToStorage();
+                showToast('Account Removed', 'Lecturer account deleted.');
+                renderAdminLecturersTable();
+            }
+        }
+
+        // ========================================================
+        // 4. QUESTIONNAIRE IMPORT ENGINE & TEMPLATE HUB
+        // ========================================================
+        function processQuestionnaireImport() {
+            const category = document.getElementById('import-category').value;
+            const title = document.getElementById('import-survey-title').value.trim();
+            const textRaw = document.getElementById('import-questions-text').value.trim();
+
+            if (!title) {
+                showToast('Validation Error', 'Please enter a title for the questionnaire.', false);
+                return;
+            }
+            if (!textRaw) {
+                showToast('Validation Error', 'Please provide question items to import.', false);
+                return;
+            }
+
+            const lines = textRaw.split('\n');
+            const questions = [];
+
+            lines.forEach((line, idx) => {
+                if (!line.trim()) return;
+                const parts = line.split('|');
+                const qText = parts[0].trim();
+                const qType = parts[1] ? parts[1].trim().toLowerCase() : 'scale';
+
+                let options = [];
+                if (qType === 'choice' && parts[2]) {
+                    options = parts[2].split(',').map(o => o.trim());
+                }
+
+                questions.push({
+                    id: 'q_imp_' + Date.now() + '_' + idx,
+                    text: qText,
+                    type: ['scale', 'choice', 'text'].includes(qType) ? qType : 'scale',
+                    options: options.length ? options : ['Option 1', 'Option 2', 'Option 3']
+                });
+            });
+
+            const newSurvey = {
+                id: 'surv_' + Date.now(),
+                title: title,
+                category: category,
+                description: `Imported questionnaire for ${category}`,
+                createdBy: 'admin',
+                isPublished: true,
+                questions: questions
+            };
+
+            state.surveys.push(newSurvey);
+            saveStateToStorage();
+
+            document.getElementById('import-survey-title').value = '';
+            document.getElementById('import-questions-text').value = '';
+
+            showToast('Import Successful', `Questionnaire "${title}" parsed and published with ${questions.length} questions.`);
+            renderAdminSurveysList();
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                document.getElementById('import-questions-text').value = evt.target.result;
+                showToast('File Loaded', 'Content imported into questionnaire text box.');
+            };
+            reader.readAsText(file);
+        }
+
+        function downloadQuestionnaireGuideWord() {
+            const docContent = `
+===================================================================
+COLLEGE OF NURSING AND MIDWIFERY, TANOSO
+OFFICIAL QUESTIONNAIRE IMPORT GUIDE & WORD TEMPLATE
+===================================================================
+
+INSTRUCTIONS FOR FACULTY & ADMINS:
+Use the format below when drafting survey questionnaires in Microsoft Word.
+Once completed, simply copy and paste your text into the Portal Import Tool.
+
+FORMAT SYNTAX:
+[Question Text] | [Type: scale / choice / text] | [Comma-separated options if choice]
+
+EXAMPLES:
+
+1. Rating Scale Question (1-5 Stars):
+How clean and well-maintained are the anatomy laboratories?|scale
+
+2. Multiple Choice Question:
+Which nursing hostel facility requires immediate renovation?|choice|Block A, Block B, Block C, Dining Annex
+
+3. Open Text Feedback:
+What improvements would you like to see in lecture delivery?|text
+
+===================================================================
+`;
+            const blob = new Blob([docContent], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Tanoso_Questionnaire_Import_Guide.doc';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Guide Downloaded', 'Word template saved to your browser downloads.');
+        }
+
+        function downloadQuestionnaireCSVTemplate() {
+            const csvContent = `Question Text,Type,Options (for Choice)
+Rate the quality of lighting in lecture halls,scale,
+Which lecture session is most interactive?,choice,"Morning, Afternoon, Evening"
+Provide suggestions for clinical equipment improvement,text,`;
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Tanoso_Questionnaire_Template.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Template Downloaded', 'CSV template saved.');
+        }
+
+        // ========================================================
+        // 5. ANALYTICS, CHARTS & DETAILED TABLES LOGIC
+        // ========================================================
+        function renderAdminAnalytics() {
+            const container = document.getElementById('admin-global-analytics-container');
+            if (state.surveys.length === 0) {
+                container.innerHTML = `<p class="text-slate-400">No active surveys available for analytics.</p>`;
+                return;
+            }
+
+            container.innerHTML = state.surveys.map(s => renderSurveyAnalyticsCard(s)).join('');
+            initSurveyCharts(state.surveys);
+        }
+
+        function renderSurveyAnalyticsCard(survey) {
+            const responses = state.responses.filter(r => r.surveyId === survey.id);
+            const totalCount = responses.length;
+
+            return `
+                <div class="border border-slate-200 rounded-2xl p-6 bg-slate-50/40 space-y-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-200 pb-3">
+                        <div>
+                            <span class="bg-brand-100 text-brand-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">${survey.category}</span>
+                            <h3 class="text-lg font-bold text-slate-800 mt-1">${survey.title}</h3>
+                        </div>
+                        <div class="bg-white px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 shadow-sm">
+                            Total Responses: <span class="text-brand-700 font-bold">${totalCount}</span>
+                        </div>
+                    </div>
+
+                    <!-- Questions Table Breakdown with Frequencies -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs bg-white rounded-xl shadow-sm border border-slate-200">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-700 uppercase font-bold border-b border-slate-200">
+                                    <th class="p-3">Question Statement</th>
+                                    <th class="p-3 text-center">Type</th>
+                                    <th class="p-3 text-center">Total Answers</th>
+                                    <th class="p-3 text-center">Rating / Response Frequencies</th>
+                                    <th class="p-3 text-center">Average Score</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                ${survey.questions.map((q, idx) => {
+                                    const qAnswers = responses.map(r => r.answers[q.id]).filter(Boolean);
+                                    let avg = 'N/A';
+                                    let freqText = '';
+
+                                    if (q.type === 'scale') {
+                                        const numArr = qAnswers.map(a => Number(a)).filter(n => !isNaN(n));
+                                        avg = numArr.length ? (numArr.reduce((a,b)=>a+b,0)/numArr.length).toFixed(2) + ' / 5' : 'N/A';
+                                        
+                                        const counts = {1:0, 2:0, 3:0, 4:0, 5:0};
+                                        numArr.forEach(n => { if (counts[n] !== undefined) counts[n]++; });
+                                        freqText = `1★:${counts[1]} | 2★:${counts[2]} | 3★:${counts[3]} | 4★:${counts[4]} | 5★:${counts[5]}`;
+                                    } else if (q.type === 'choice') {
+                                        const counts = {};
+                                        qAnswers.forEach(a => { counts[a] = (counts[a] || 0) + 1; });
+                                        freqText = Object.entries(counts).map(([k,v]) => `${k}: ${v}`).join(' | ');
+                                    } else {
+                                        freqText = `${qAnswers.length} Feedback comments submitted`;
+                                    }
+
+                                    return `
+                                        <tr>
+                                            <td class="p-3 font-medium text-slate-800"><span class="font-bold text-slate-400">Q${idx+1}.</span> ${q.text}</td>
+                                            <td class="p-3 text-center font-mono text-[10px] uppercase text-slate-500">${q.type}</td>
+                                            <td class="p-3 text-center font-semibold text-slate-700">${qAnswers.length}</td>
+                                            <td class="p-3 text-center text-slate-600 font-mono text-[11px]">${freqText || 'No Data'}</td>
+                                            <td class="p-3 text-center font-bold text-brand-700">${avg}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pie Charts Grid for Questions -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        ${survey.questions.map(q => `
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center">
+                                <h5 class="text-xs font-bold text-slate-700 text-center mb-3 line-clamp-1">${q.text}</h5>
+                                <div class="w-48 h-48 relative">
+                                    <canvas id="chart_${survey.id}_${q.id}"></canvas>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function initSurveyCharts(surveys) {
+            setTimeout(() => {
+                surveys.forEach(survey => {
+                    const responses = state.responses.filter(r => r.surveyId === survey.id);
+
+                    survey.questions.forEach(q => {
+                        const canvasId = `chart_${survey.id}_${q.id}`;
+                        const canvas = document.getElementById(canvasId);
+                        if (!canvas) return;
+
+                        if (state.chartInstances[canvasId]) {
+                            state.chartInstances[canvasId].destroy();
+                        }
+
+                        const qAnswers = responses.map(r => r.answers[q.id]).filter(Boolean);
+                        let labels = [];
+                        let data = [];
+                        let colors = ['#16a34a', '#2563eb', '#f59e0b', '#dc2626', '#8b5cf6', '#06b6d4'];
+
+                        if (q.type === 'scale') {
+                            labels = ['1 Star (Poor)', '2 Stars', '3 Stars (Avg)', '4 Stars', '5 Stars (Excellent)'];
+                            const counts = [0, 0, 0, 0, 0];
+                            qAnswers.forEach(a => {
+                                const val = parseInt(a);
+                                if (val >= 1 && val <= 5) counts[val - 1]++;
+                            });
+                            data = counts;
+                        } else if (q.type === 'choice') {
+                            labels = q.options || [];
+                            const counts = {};
+                            labels.forEach(l => counts[l] = 0);
+                            qAnswers.forEach(a => { counts[a] = (counts[a] || 0) + 1; });
+                            data = labels.map(l => counts[l] || 0);
+                        } else {
+                            labels = ['Responses Received'];
+                            data = [qAnswers.length];
+                        }
+
+                        const ctx = canvas.getContext('2d');
+                        state.chartInstances[canvasId] = new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    data: data,
+                                    backgroundColor: colors
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } }
+                                }
+                            }
+                        });
+                    });
+                });
+            }, 100);
+        }
+
+        // ========================================================
+        // 6. EXPORT ENGINE (CSV, EXCEL, WORD, PDF)
+        // ========================================================
+        function exportAllData(format) {
+            if (state.responses.length === 0) {
+                showToast('Export Failed', 'No response data available to export.', false);
+                return;
+            }
+
+            if (format === 'csv') {
+                let csv = 'Survey Title,Category,Submitted At,Question,Answer,General Comment\n';
+                state.responses.forEach(r => {
+                    const survey = state.surveys.find(s => s.id === r.surveyId);
+                    const title = survey ? `"${survey.title.replace(/"/g, '""')}"` : 'Unknown';
+                    const cat = survey ? survey.category : '';
+                    
+                    if (survey) {
+                        survey.questions.forEach(q => {
+                            const ans = r.answers[q.id] || '';
+                            csv += `${title},${cat},${r.submittedAt},"${q.text.replace(/"/g, '""')}","${ans}","${(r.comment||'').replace(/"/g, '""')}"\n`;
+                        });
+                    }
+                });
+
+                downloadBlob(csv, 'Tanoso_Survey_Results.csv', 'text/csv');
+                showToast('CSV Exported', 'File downloaded successfully.');
+            } 
+            else if (format === 'excel') {
+                let tsv = 'Survey Title\tCategory\tSubmitted Date\tQuestion\tStudent Answer\tComment\n';
+                state.responses.forEach(r => {
+                    const survey = state.surveys.find(s => s.id === r.surveyId);
+                    if (survey) {
+                        survey.questions.forEach(q => {
+                            tsv += `${survey.title}\t${survey.category}\t${r.submittedAt}\t${q.text}\t${r.answers[q.id]||''}\t${r.comment||''}\n`;
+                        });
+                    }
+                });
+
+                downloadBlob(tsv, 'Tanoso_Survey_Results_Excel.xls', 'application/vnd.ms-excel');
+                showToast('Excel Exported', 'Excel spreadsheet generated.');
+            }
+            else if (format === 'word') {
+                let docText = `
+COLLEGE OF NURSING AND MIDWIFERY, TANOSO
+OFFICIAL SURVEY & QUALITY ASSURANCE REPORT
+Generated: ${new Date().toLocaleString()}
+====================================================================\n\n`;
+
+                state.surveys.forEach(survey => {
+                    const resps = state.responses.filter(r => r.surveyId === survey.id);
+                    docText += `SURVEY: ${survey.title}\n`;
+                    docText += `Category: ${survey.category} | Total Responses: ${resps.length}\n`;
+                    docText += `--------------------------------------------------------------------\n`;
+
+                    survey.questions.forEach((q, idx) => {
+                        const qAnswers = resps.map(r => r.answers[q.id]).filter(Boolean);
+                        docText += `Q${idx+1}: ${q.text}\n`;
+                        docText += `Total Answers: ${qAnswers.length}\n\n`;
+                    });
+                    docText += `\n`;
+                });
+
+                downloadBlob(docText, 'Tanoso_Survey_Report.doc', 'application/msword');
+                showToast('Word Report Exported', 'Word report downloaded.');
+            }
+            else if (format === 'pdf') {
+                window.print();
+            }
+        }
+
+        function downloadBlob(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function copySQLSchema() {
+            const code = document.getElementById('sql-schema-code').value;
+            navigator.clipboard.writeText(code).then(() => {
+                showToast('Copied to Clipboard', 'Database SQL schema copied successfully.');
+            }).catch(() => {
+                showToast('Copy Failed', 'Please highlight text manually to copy.', false);
+            });
+        }
+
+        // Initialize App on Window Load
+        window.onload = function () {
+            initApp();
+        };
+    </script>
+</body>
+</html>
