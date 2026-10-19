@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>College of Nursing and Midwifery, Tanoso - Survey Portal</title>
+
+    <!-- PWA & Mobile Web App Tags -->
+    <meta name="theme-color" content="#14532d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CONM Tanoso">
+    <link rel="apple-touch-icon" href="TANOSO LOGO.jpeg">
+
+    <!-- Web App Manifest (Embedded Data URI) -->
+    <link rel="manifest" href='data:application/manifest+json,{"name":"College of Nursing and Midwifery Tanoso Survey Portal","short_name":"CONM Tanoso","start_url":".","display":"standalone","background_color":"#f8fafc","theme_color":"#14532d","icons":[{"src":"TANOSO LOGO.jpeg","sizes":"192x192","type":"image/jpeg"},{"src":"TANOSO LOGO.jpeg","sizes":"512x512","type":"image/jpeg"}]}'>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -113,6 +124,21 @@
             </div>
         </div>
     </header>
+
+    <!-- MOBILE INSTALLATION POPUP BANNER (ANDROID / IOS) -->
+    <div id="pwa-install-banner" class="hidden fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:max-w-md bg-card p-4 rounded-xl shadow-2xl border z-50 flex items-center justify-between gap-4 border-green-600 animate-bounce-short">
+        <div class="flex items-center space-x-3">
+            <img src="TANOSO LOGO.jpeg" alt="App Icon" class="w-12 h-12 rounded-lg object-contain border p-0.5 bg-white">
+            <div>
+                <h4 class="font-bold text-sm leading-tight">Install Tanoso Portal App</h4>
+                <p id="pwa-install-desc" class="text-xs text-muted">Add to your home screen for quick mobile access.</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="dismissInstallBanner()" class="px-2.5 py-1.5 text-xs text-muted hover:text-gray-800 font-bold">Later</button>
+            <button id="pwa-install-btn" onclick="triggerPwaInstall()" class="bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow">Install</button>
+        </div>
+    </div>
 
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8">
@@ -560,6 +586,44 @@ Q3: General suggestions. [Text]
 
     <!-- ================= APPLICATION JAVASCRIPT ================= -->
     <script>
+        // PWA INSTALLATION POPUP LOGIC
+        let deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('tanoso_pwa_dismissed')) {
+                document.getElementById('pwa-install-banner').classList.remove('hidden');
+            }
+        });
+
+        // iOS Safari Detection
+        const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+        if (isIos && !isStandalone && !localStorage.getItem('tanoso_pwa_dismissed')) {
+            document.getElementById('pwa-install-desc').innerText = 'Tap Share button below ➔ "Add to Home Screen"';
+            document.getElementById('pwa-install-btn').classList.add('hidden');
+            document.getElementById('pwa-install-banner').classList.remove('hidden');
+        }
+
+        function triggerPwaInstall() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        console.log('App installed by user');
+                    }
+                    dismissInstallBanner();
+                });
+            }
+        }
+
+        function dismissInstallBanner() {
+            document.getElementById('pwa-install-banner').classList.add('hidden');
+            localStorage.setItem('tanoso_pwa_dismissed', 'true');
+        }
+
         // Default Mock Data
         const defaultSurveys = [
             {
