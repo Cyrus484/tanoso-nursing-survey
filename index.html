@@ -701,6 +701,16 @@ Q3: General suggestions. [Text]
             renderStudentSurveys();
             if (loggedInLecturer) showLecturerDashboard();
             if (isAdminLoggedIn) showAdminDashboard();
+
+            // Check if URL has direct survey link hash
+            const hash = window.location.hash;
+            if (hash.includes('survey=')) {
+                const srvId = hash.split('survey=')[1];
+                if (srvId) {
+                    switchTab('student');
+                    setTimeout(() => openStudentSurvey(srvId), 100);
+                }
+            }
         });
 
         // Navigation Switcher
@@ -827,11 +837,26 @@ Q3: General suggestions. [Text]
                         <p class="text-xs text-muted mt-1">By: ${srv.author}</p>
                         <p class="text-xs text-muted mt-0.5"><i class="fa-solid fa-list-check"></i> ${srv.questions.length} Questions</p>
                     </div>
-                    <button onclick="openStudentSurvey('${srv.id}')" class="mt-4 w-full bg-green-700 hover:bg-green-800 text-white text-xs font-bold py-2 rounded-lg transition shadow">
-                        Take Survey
-                    </button>
+                    <div class="mt-4 space-y-2">
+                        <button onclick="openStudentSurvey('${srv.id}')" class="w-full bg-green-700 hover:bg-green-800 text-white text-xs font-bold py-2 rounded-lg transition shadow">
+                            Take Survey
+                        </button>
+                        <button onclick="copySurveyLink('${srv.id}')" class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-xs font-semibold py-1.5 rounded-lg transition flex items-center justify-center gap-1.5 border">
+                            <i class="fa-solid fa-link text-green-600"></i> Copy Survey Link
+                        </button>
+                    </div>
                 `;
                 list.appendChild(card);
+            });
+        }
+
+        function copySurveyLink(surveyId) {
+            const baseUrl = window.location.href.split('#')[0];
+            const shareLink = `${baseUrl}#survey=${surveyId}`;
+            navigator.clipboard.writeText(shareLink).then(() => {
+                alert('Survey direct link copied to clipboard! You can now share it with students.');
+            }).catch(err => {
+                prompt('Copy survey link manually:', shareLink);
             });
         }
 
@@ -898,6 +923,9 @@ Q3: General suggestions. [Text]
         function closeStudentSurvey() {
             document.getElementById('student-survey-list').classList.remove('hidden');
             document.getElementById('student-survey-form-container').classList.add('hidden');
+            if (window.location.hash.includes('survey=')) {
+                history.pushState("", document.title, window.location.pathname + window.location.search);
+            }
         }
 
         function submitStudentResponse(event) {
@@ -973,9 +1001,12 @@ Q3: General suggestions. [Text]
                         <h4 class="font-bold text-md">${srv.title}</h4>
                         <p class="text-xs text-muted">Category: ${srv.category} | ${srv.questions.length} Questions | Responses: ${srv.responses ? srv.responses.length : 0}</p>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="copySurveyLink('${srv.id}')" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-xs font-bold px-3 py-1.5 rounded shadow">
+                            <i class="fa-solid fa-link"></i> Copy Link
+                        </button>
                         <button onclick="viewAnalytics('${srv.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold shadow">
-                            <i class="fa-solid fa-chart-pie"></i> View Results
+                            <i class="fa-solid fa-chart-pie"></i> Results
                         </button>
                     </div>
                 `;
@@ -1045,7 +1076,10 @@ Q3: General suggestions. [Text]
                         <h4 class="font-bold text-md mt-1">${srv.title}</h4>
                         <p class="text-xs text-muted">Author: ${srv.author} | Questions: ${srv.questions.length} | Responses: ${srv.responses ? srv.responses.length : 0}</p>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="copySurveyLink('${srv.id}')" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-xs font-bold px-3 py-1.5 rounded shadow">
+                            <i class="fa-solid fa-link"></i> Copy Link
+                        </button>
                         <button onclick="togglePublish('${srv.id}')" class="px-3 py-1.5 rounded text-xs font-bold border shadow transition ${srv.published ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-green-600 hover:bg-green-700 text-white'}">
                             ${srv.published ? 'Unpublish' : 'Publish'}
                         </button>
