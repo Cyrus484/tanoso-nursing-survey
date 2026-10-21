@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-title" content="CONM Tanoso">
     <link rel="apple-touch-icon" href="TANOSO LOGO.jpeg">
 
-    <!-- Web App Manifest (Embedded Data URI) -->
+    <!-- Web App Manifest -->
     <link rel="manifest" href='data:application/manifest+json,{"name":"College of Nursing and Midwifery Tanoso Survey Portal","short_name":"CONM Tanoso","start_url":".","display":"standalone","background_color":"#f8fafc","theme_color":"#14532d","icons":[{"src":"TANOSO LOGO.jpeg","sizes":"192x192","type":"image/jpeg"},{"src":"TANOSO LOGO.jpeg","sizes":"512x512","type":"image/jpeg"}]}'>
 
     <!-- Tailwind CSS -->
@@ -86,7 +86,7 @@
     <!-- TOP HEADER -->
     <header class="bg-header shadow-md transition-colors duration-200 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('student')">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
                 <!-- SCHOOL LOGO DISPLAY -->
                 <div class="bg-white p-1 rounded-full shadow-inner flex items-center justify-center w-14 h-14 overflow-hidden border-2 border-white">
                     <img src="TANOSO LOGO.jpeg" alt="College Logo" class="w-full h-full object-contain rounded-full" onError="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Tanoso+Nursing&background=16a34a&color=fff';">
@@ -97,16 +97,13 @@
                 </div>
             </div>
 
-            <!-- NAVIGATION CONTROLS -->
-            <div class="flex items-center space-x-2 flex-wrap gap-y-2">
+            <!-- NAVIGATION CONTROLS (STAFF & ADMIN ONLY) -->
+            <div id="main-nav-controls" class="flex items-center space-x-2 flex-wrap gap-y-2">
                 <nav class="flex space-x-1 bg-black/10 p-1 rounded-lg">
-                    <button onclick="switchTab('student')" id="nav-student" class="px-3 py-1.5 rounded-md text-sm font-semibold transition-all bg-white text-green-900 shadow">
-                        <i class="fa-solid fa-graduation-cap mr-1"></i> Student Survey
-                    </button>
-                    <button onclick="switchTab('lecturer')" id="nav-lecturer" class="px-3 py-1.5 rounded-md text-sm font-semibold transition-all hover:bg-white/20">
+                    <button onclick="switchTab('lecturer')" id="nav-lecturer" class="px-3 py-1.5 rounded-md text-sm font-semibold transition-all bg-white text-green-900 shadow">
                         <i class="fa-solid fa-chalkboard-teacher mr-1"></i> Lecturer Portal
                     </button>
-                    <button onclick="switchTab('admin')" id="nav-admin" class="px-3 py-1.5 rounded-md text-sm font-semibold transition-all hover:bg-white/20">
+                    <button onclick="switchTab('admin')" id="nav-admin" class="px-3 py-1.5 rounded-md text-sm font-semibold transition-all hover:bg-white/20 text-white">
                         <i class="fa-solid fa-user-shield mr-1"></i> Admin Console
                     </button>
                 </nav>
@@ -138,31 +135,16 @@
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 sm:px-6 lg:px-8">
 
-        <!-- ================= STUDENT SURVEY VIEW ================= -->
-        <section id="tab-student" class="space-y-6">
-            <div class="bg-card p-6 rounded-xl shadow-sm border transition-colors flex items-center gap-4">
-                <img src="TANOSO LOGO.jpeg" alt="Logo" class="w-16 h-16 object-contain hidden sm:block" onError="this.style.display='none'">
-                <div>
-                    <h2 class="text-2xl font-bold mb-1">Student Feedback & Rating Portal</h2>
-                    <p class="text-sm text-muted">Select an active survey below to rate campus experiences, lecture facilities, kitchen services, or lecturer performance.</p>
-                </div>
-            </div>
-
-            <!-- ACTIVE SURVEYS LIST -->
-            <div id="student-survey-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- JS populated -->
-            </div>
-
-            <!-- ACTIVE SURVEY FORM DISPLAY -->
-            <div id="student-survey-form-container" class="hidden bg-card p-6 sm:p-8 rounded-xl shadow-md border transition-colors max-w-3xl mx-auto">
-                <button onclick="closeStudentSurvey()" class="mb-4 text-xs font-bold text-green-700 dark:text-green-400 hover:underline flex items-center gap-1">
-                    <i class="fa-solid fa-arrow-left"></i> Back to all surveys
-                </button>
-                
-                <div class="border-b pb-4 mb-6">
-                    <span id="survey-form-category" class="text-xs uppercase tracking-wider font-bold text-green-700 bg-green-100 dark:bg-green-900/40 dark:text-green-300 px-2.5 py-1 rounded-full">Category</span>
-                    <h2 id="survey-form-title" class="text-2xl font-bold mt-2">Survey Title</h2>
-                    <p id="survey-form-author" class="text-xs text-muted mt-1">Issued by Admin</p>
+        <!-- ================= DEDICATED STUDENT SURVEY LINK INTERFACE ================= -->
+        <section id="tab-student-survey" class="hidden space-y-6">
+            <div id="student-survey-form-container" class="bg-card p-6 sm:p-8 rounded-xl shadow-md border transition-colors max-w-3xl mx-auto">
+                <div class="flex items-center space-x-3 border-b pb-4 mb-6">
+                    <img src="TANOSO LOGO.jpeg" alt="Logo" class="w-14 h-14 object-contain">
+                    <div>
+                        <span id="survey-form-category" class="text-xs uppercase tracking-wider font-bold text-green-700 bg-green-100 dark:bg-green-900/40 dark:text-green-300 px-2.5 py-0.5 rounded-full">Category</span>
+                        <h2 id="survey-form-title" class="text-2xl font-bold mt-1">Survey Title</h2>
+                        <p id="survey-form-author" class="text-xs text-muted mt-0.5">College of Nursing and Midwifery, Tanoso</p>
+                    </div>
                 </div>
 
                 <form id="student-survey-form" onsubmit="submitStudentResponse(event)" class="space-y-6">
@@ -177,10 +159,17 @@
                     </div>
                 </form>
             </div>
+
+            <!-- INVALID SURVEY LINK MESSAGE -->
+            <div id="invalid-survey-msg" class="hidden bg-card p-8 rounded-xl shadow-md border text-center max-w-md mx-auto space-y-3">
+                <i class="fa-solid fa-circle-exclamation text-4xl text-amber-500"></i>
+                <h3 class="text-xl font-bold">Survey Not Found</h3>
+                <p class="text-xs text-muted">This survey link is invalid, expired, or has been unpublished by the administrator.</p>
+            </div>
         </section>
 
         <!-- ================= LECTURER PORTAL VIEW ================= -->
-        <section id="tab-lecturer" class="hidden space-y-6">
+        <section id="tab-lecturer" class="space-y-6">
             <!-- LECTURER LOGIN FORM -->
             <div id="lecturer-login-card" class="bg-card p-6 max-w-md mx-auto rounded-xl shadow-md border transition-colors">
                 <div class="text-center mb-6">
@@ -224,7 +213,7 @@
                 <!-- LECTURER SURVEYS & PASSWORD CHANGE GRID -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="lg:col-span-2 bg-card p-6 rounded-xl shadow-sm border">
-                        <h3 class="text-lg font-bold mb-4">My Surveys & Course Ratings</h3>
+                        <h3 class="text-lg font-bold mb-4">My Surveys & Student Links</h3>
                         <div id="lec-surveys-list" class="space-y-4">
                             <!-- JS populated -->
                         </div>
@@ -289,7 +278,7 @@
                 <div class="bg-card p-6 rounded-xl shadow-sm border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h2 class="text-2xl font-bold">Administrator Console</h2>
-                        <p class="text-xs text-muted">Manage system users, publish global campus surveys, import questionnaires, and review institution analytics.</p>
+                        <p class="text-xs text-muted">Manage system users, publish campus surveys, copy shareable links for students, and review analytics.</p>
                     </div>
                     <div class="flex gap-2 flex-wrap">
                         <button onclick="openCreateSurveyModal('Admin')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-bold shadow flex items-center gap-1">
@@ -688,7 +677,7 @@ Q3: General suggestions. [Text]
         let loggedInLecturer = JSON.parse(sessionStorage.getItem('tanoso_active_lecturer')) || null;
         let isAdminLoggedIn = sessionStorage.getItem('tanoso_admin_logged') === 'true';
         let currentAnalyticsSurvey = null;
-        let activeTab = 'student';
+        let activeTab = 'lecturer';
         let activeAdminSubTab = 'surveys';
         let renderedCharts = [];
 
@@ -698,20 +687,25 @@ Q3: General suggestions. [Text]
 
         // Application Startup
         window.addEventListener('DOMContentLoaded', () => {
-            renderStudentSurveys();
-            if (loggedInLecturer) showLecturerDashboard();
-            if (isAdminLoggedIn) showAdminDashboard();
-
-            // Check if URL has direct survey link hash
+            // Check if student opened direct survey link
             const hash = window.location.hash;
             if (hash.includes('survey=')) {
                 const srvId = hash.split('survey=')[1];
-                if (srvId) {
-                    switchTab('student');
-                    setTimeout(() => openStudentSurvey(srvId), 100);
-                }
+                openDedicatedStudentSurvey(srvId);
+            } else {
+                switchTab('lecturer');
+                if (loggedInLecturer) showLecturerDashboard();
+                if (isAdminLoggedIn) showAdminDashboard();
             }
         });
+
+        function goHome() {
+            if (window.location.hash.includes('survey=')) {
+                window.location.hash = '';
+                document.getElementById('main-nav-controls').classList.remove('hidden');
+                switchTab('lecturer');
+            }
+        }
 
         // Navigation Switcher
         function switchTab(tab) {
@@ -720,16 +714,126 @@ Q3: General suggestions. [Text]
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
 
             // Nav Highlight
-            ['student', 'lecturer', 'admin'].forEach(t => {
+            ['lecturer', 'admin'].forEach(t => {
                 const btn = document.getElementById(`nav-${t}`);
-                if (t === tab) {
-                    btn.className = "px-3 py-1.5 rounded-md text-sm font-semibold transition-all bg-white text-green-900 shadow";
-                } else {
-                    btn.className = "px-3 py-1.5 rounded-md text-sm font-semibold transition-all hover:bg-white/20 text-white";
+                if (btn) {
+                    if (t === tab) {
+                        btn.className = "px-3 py-1.5 rounded-md text-sm font-semibold transition-all bg-white text-green-900 shadow";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-md text-sm font-semibold transition-all hover:bg-white/20 text-white";
+                    }
                 }
             });
+        }
 
-            if (tab === 'student') closeStudentSurvey();
+        // ================= DEDICATED STUDENT SURVEY LINK INTERFACE =================
+        function openDedicatedStudentSurvey(surveyId) {
+            // Hide navigation controls for student interface
+            document.getElementById('main-nav-controls').classList.add('hidden');
+            document.querySelectorAll('main > section').forEach(sec => sec.classList.add('hidden'));
+
+            const sec = document.getElementById('tab-student-survey');
+            sec.classList.remove('hidden');
+
+            const srv = surveys.find(s => s.id === surveyId && s.published);
+            const container = document.getElementById('student-survey-form-container');
+            const invalidMsg = document.getElementById('invalid-survey-msg');
+
+            if (!srv) {
+                container.classList.add('hidden');
+                invalidMsg.classList.remove('hidden');
+                return;
+            }
+
+            invalidMsg.classList.add('hidden');
+            container.classList.remove('hidden');
+
+            document.getElementById('survey-form-category').innerText = srv.category;
+            document.getElementById('survey-form-title').innerText = srv.title;
+            document.getElementById('survey-form-author').innerText = `Issued by: ${srv.author} | College of Nursing & Midwifery, Tanoso`;
+
+            const qList = document.getElementById('survey-questions-list');
+            qList.innerHTML = '';
+
+            srv.questions.forEach((q, idx) => {
+                const item = document.createElement('div');
+                item.className = 'space-y-2 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-800/30';
+                
+                let inputHtml = '';
+                if (q.type === 'rating') {
+                    inputHtml = `
+                        <div class="flex items-center space-x-4">
+                            ${[1,2,3,4,5].map(val => `
+                                <label class="flex items-center space-x-1 cursor-pointer">
+                                    <input type="radio" name="${q.id}" value="${val}" required class="accent-green-700">
+                                    <span class="text-sm font-semibold">${val} ★</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                } else if (q.type === 'yes_no') {
+                    inputHtml = `
+                        <div class="flex items-center space-x-6">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="radio" name="${q.id}" value="Yes" required class="accent-green-700">
+                                <span class="text-sm font-semibold">Yes</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="radio" name="${q.id}" value="No" required class="accent-green-700">
+                                <span class="text-sm font-semibold">No</span>
+                            </label>
+                        </div>
+                    `;
+                } else {
+                    inputHtml = `
+                        <textarea name="${q.id}" rows="3" required class="w-full p-2.5 border rounded-lg text-sm bg-transparent border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Type your response here..."></textarea>
+                    `;
+                }
+
+                item.innerHTML = `
+                    <label class="block text-sm font-bold">${idx + 1}. ${q.text}</label>
+                    ${inputHtml}
+                `;
+                qList.appendChild(item);
+            });
+
+            container.dataset.activeSurveyId = surveyId;
+        }
+
+        function submitStudentResponse(event) {
+            event.preventDefault();
+            const container = document.getElementById('student-survey-form-container');
+            const surveyId = container.dataset.activeSurveyId;
+            const srv = surveys.find(s => s.id === surveyId);
+            if (!srv) return;
+
+            const formData = new FormData(event.target);
+            const responseObj = {};
+            srv.questions.forEach(q => {
+                responseObj[q.id] = formData.get(q.id);
+            });
+
+            if (!srv.responses) srv.responses = [];
+            srv.responses.push(responseObj);
+            saveSurveys();
+
+            container.innerHTML = `
+                <div class="text-center py-10 space-y-4">
+                    <i class="fa-solid fa-circle-check text-5xl text-green-600"></i>
+                    <h2 class="text-2xl font-bold">Response Submitted!</h2>
+                    <p class="text-sm text-muted">Thank you for evaluating College of Nursing and Midwifery, Tanoso. Your feedback has been recorded.</p>
+                </div>
+            `;
+        }
+
+        function copySurveyLink(surveyId) {
+            const baseUrl = window.location.href.split('#')[0];
+            const shareLink = `${baseUrl}#survey=${surveyId}`;
+            navigator.clipboard.writeText(shareLink).then(() => {
+                alert('Student survey link copied to clipboard! Share this link directly with students.');
+            }).catch(err => {
+                prompt('Copy student survey link manually:', shareLink);
+            });
         }
 
         // ================= THEME SWITCHER LOGIC =================
@@ -815,141 +919,6 @@ Q3: General suggestions. [Text]
             event.target.reset();
         }
 
-        // ================= STUDENT VIEW LOGIC =================
-        function renderStudentSurveys() {
-            const list = document.getElementById('student-survey-list');
-            list.innerHTML = '';
-
-            const published = surveys.filter(s => s.published);
-
-            if (published.length === 0) {
-                list.innerHTML = `<p class="col-span-3 text-center py-8 text-muted text-sm">No published surveys available at this time.</p>`;
-                return;
-            }
-
-            published.forEach(srv => {
-                const card = document.createElement('div');
-                card.className = 'bg-card p-6 rounded-xl shadow-sm border hover:shadow-md transition flex flex-col justify-between';
-                card.innerHTML = `
-                    <div>
-                        <span class="text-xs uppercase font-bold text-green-700 bg-green-100 dark:bg-green-900/40 dark:text-green-300 px-2 py-0.5 rounded-full">${srv.category}</span>
-                        <h3 class="text-lg font-bold mt-2 leading-snug">${srv.title}</h3>
-                        <p class="text-xs text-muted mt-1">By: ${srv.author}</p>
-                        <p class="text-xs text-muted mt-0.5"><i class="fa-solid fa-list-check"></i> ${srv.questions.length} Questions</p>
-                    </div>
-                    <div class="mt-4 space-y-2">
-                        <button onclick="openStudentSurvey('${srv.id}')" class="w-full bg-green-700 hover:bg-green-800 text-white text-xs font-bold py-2 rounded-lg transition shadow">
-                            Take Survey
-                        </button>
-                        <button onclick="copySurveyLink('${srv.id}')" class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-xs font-semibold py-1.5 rounded-lg transition flex items-center justify-center gap-1.5 border">
-                            <i class="fa-solid fa-link text-green-600"></i> Copy Survey Link
-                        </button>
-                    </div>
-                `;
-                list.appendChild(card);
-            });
-        }
-
-        function copySurveyLink(surveyId) {
-            const baseUrl = window.location.href.split('#')[0];
-            const shareLink = `${baseUrl}#survey=${surveyId}`;
-            navigator.clipboard.writeText(shareLink).then(() => {
-                alert('Survey direct link copied to clipboard! You can now share it with students.');
-            }).catch(err => {
-                prompt('Copy survey link manually:', shareLink);
-            });
-        }
-
-        function openStudentSurvey(surveyId) {
-            const srv = surveys.find(s => s.id === surveyId);
-            if (!srv) return;
-
-            document.getElementById('student-survey-list').classList.add('hidden');
-            const container = document.getElementById('student-survey-form-container');
-            container.classList.remove('hidden');
-
-            document.getElementById('survey-form-category').innerText = srv.category;
-            document.getElementById('survey-form-title').innerText = srv.title;
-            document.getElementById('survey-form-author').innerText = `Issued by: ${srv.author}`;
-
-            const qList = document.getElementById('survey-questions-list');
-            qList.innerHTML = '';
-
-            srv.questions.forEach((q, idx) => {
-                const item = document.createElement('div');
-                item.className = 'space-y-2 p-4 border rounded-lg bg-gray-50/50 dark:bg-gray-800/30';
-                
-                let inputHtml = '';
-                if (q.type === 'rating') {
-                    inputHtml = `
-                        <div class="flex items-center space-x-4">
-                            ${[1,2,3,4,5].map(val => `
-                                <label class="flex items-center space-x-1 cursor-pointer">
-                                    <input type="radio" name="${q.id}" value="${val}" required class="accent-green-700">
-                                    <span class="text-sm font-semibold">${val} ★</span>
-                                </label>
-                            `).join('')}
-                        </div>
-                    `;
-                } else if (q.type === 'yes_no') {
-                    inputHtml = `
-                        <div class="flex items-center space-x-6">
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="radio" name="${q.id}" value="Yes" required class="accent-green-700">
-                                <span class="text-sm font-semibold">Yes</span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input type="radio" name="${q.id}" value="No" required class="accent-green-700">
-                                <span class="text-sm font-semibold">No</span>
-                            </label>
-                        </div>
-                    `;
-                } else {
-                    inputHtml = `
-                        <textarea name="${q.id}" rows="3" required class="w-full p-2.5 border rounded-lg text-sm bg-transparent border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-green-600" placeholder="Type your response here..."></textarea>
-                    `;
-                }
-
-                item.innerHTML = `
-                    <label class="block text-sm font-bold">${idx + 1}. ${q.text}</label>
-                    ${inputHtml}
-                `;
-                qList.appendChild(item);
-            });
-
-            container.dataset.activeSurveyId = surveyId;
-        }
-
-        function closeStudentSurvey() {
-            document.getElementById('student-survey-list').classList.remove('hidden');
-            document.getElementById('student-survey-form-container').classList.add('hidden');
-            if (window.location.hash.includes('survey=')) {
-                history.pushState("", document.title, window.location.pathname + window.location.search);
-            }
-        }
-
-        function submitStudentResponse(event) {
-            event.preventDefault();
-            const container = document.getElementById('student-survey-form-container');
-            const surveyId = container.dataset.activeSurveyId;
-            const srv = surveys.find(s => s.id === surveyId);
-            if (!srv) return;
-
-            const formData = new FormData(event.target);
-            const responseObj = {};
-            srv.questions.forEach(q => {
-                responseObj[q.id] = formData.get(q.id);
-            });
-
-            if (!srv.responses) srv.responses = [];
-            srv.responses.push(responseObj);
-            saveSurveys();
-
-            alert('Thank you! Your survey responses have been submitted successfully.');
-            closeStudentSurvey();
-            event.target.reset();
-        }
-
         // ================= LECTURER PORTAL LOGIC =================
         function handleLecturerLogin(e) {
             e.preventDefault();
@@ -1002,8 +971,8 @@ Q3: General suggestions. [Text]
                         <p class="text-xs text-muted">Category: ${srv.category} | ${srv.questions.length} Questions | Responses: ${srv.responses ? srv.responses.length : 0}</p>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <button onclick="copySurveyLink('${srv.id}')" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-xs font-bold px-3 py-1.5 rounded shadow">
-                            <i class="fa-solid fa-link"></i> Copy Link
+                        <button onclick="copySurveyLink('${srv.id}')" class="bg-green-700 hover:bg-green-800 text-white text-xs font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
+                            <i class="fa-solid fa-link"></i> Copy Student Link
                         </button>
                         <button onclick="viewAnalytics('${srv.id}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs font-bold shadow">
                             <i class="fa-solid fa-chart-pie"></i> Results
@@ -1077,8 +1046,8 @@ Q3: General suggestions. [Text]
                         <p class="text-xs text-muted">Author: ${srv.author} | Questions: ${srv.questions.length} | Responses: ${srv.responses ? srv.responses.length : 0}</p>
                     </div>
                     <div class="flex items-center gap-2 flex-wrap">
-                        <button onclick="copySurveyLink('${srv.id}')" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-xs font-bold px-3 py-1.5 rounded shadow">
-                            <i class="fa-solid fa-link"></i> Copy Link
+                        <button onclick="copySurveyLink('${srv.id}')" class="bg-green-700 hover:bg-green-800 text-white text-xs font-bold px-3 py-1.5 rounded shadow flex items-center gap-1">
+                            <i class="fa-solid fa-link"></i> Copy Student Link
                         </button>
                         <button onclick="togglePublish('${srv.id}')" class="px-3 py-1.5 rounded text-xs font-bold border shadow transition ${srv.published ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'bg-green-600 hover:bg-green-700 text-white'}">
                             ${srv.published ? 'Unpublish' : 'Publish'}
@@ -1101,7 +1070,6 @@ Q3: General suggestions. [Text]
                 srv.published = !srv.published;
                 saveSurveys();
                 renderAdminSurveys();
-                renderStudentSurveys();
             }
         }
 
@@ -1110,7 +1078,6 @@ Q3: General suggestions. [Text]
                 surveys = surveys.filter(s => s.id !== surveyId);
                 saveSurveys();
                 renderAdminSurveys();
-                renderStudentSurveys();
             }
         }
 
@@ -1213,7 +1180,6 @@ Q3: General suggestions. [Text]
             saveSurveys();
 
             closeModal('modal-create-survey');
-            renderStudentSurveys();
             if (isAdminLoggedIn) renderAdminSurveys();
             if (loggedInLecturer) renderLecturerSurveys();
 
@@ -1286,7 +1252,6 @@ Q3: General suggestions. [Text]
             saveSurveys();
             closeModal('modal-import');
             renderAdminSurveys();
-            renderStudentSurveys();
             alert('Questionnaire imported and published!');
             e.target.reset();
         }
